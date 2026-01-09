@@ -18,8 +18,7 @@ namespace TodoList.Controllers
 
         public async Task<IActionResult> IndexAsync()
         {
-            var users = await _usersRepository.GetAllAsync();
-            return Ok(users);
+            return View();
         }
 
         public IActionResult Privacy()

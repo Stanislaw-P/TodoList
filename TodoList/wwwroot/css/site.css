@@ -20,3 +20,15 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.navbar {
+    transition: all 0.3s ease;
+}
+
+.navbar-brand span {
+    letter-spacing: -0.5px;
+}
+
+.nav-link:hover {
+    color: #0d6efd !important; /* ÷вет основной темы Bootstrap */
+}

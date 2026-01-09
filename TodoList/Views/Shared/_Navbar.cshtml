@@ -1,0 +1,57 @@
+﻿<header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                <i class="bi bi-check2-square text-primary me-2" style="font-size: 1.5rem;"></i>
+                <span class="fw-bold">TaskMaster</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Todo" asp-action="Index">Мои задачи</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Todo" asp-action="Calendar">Календарь</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center">
+                    <form class="me-3 d-none d-lg-block">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" placeholder="Найти задачу...">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="dropdown">
+                            <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                                @* <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle"> *@
+                                <p class="text-dark">@User.Identity.Name</p>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="dropdownUser">
+                                <li><a class="dropdown-item" href="#">Настройки</a></li>
+                                <li><a class="dropdown-item" href="#">Профиль</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Выйти</a></li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Войти</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
