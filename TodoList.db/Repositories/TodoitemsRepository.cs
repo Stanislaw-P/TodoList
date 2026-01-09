@@ -44,5 +44,35 @@ namespace TodoList.db.Repositories
 
             return todoItems;
         }
+
+        public async Task<List<TodoItem>> GetAllAsync(int userId)
+        {
+            using MySqlConnection connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            string sqlQuery = @"SELECT title, description, is_completed, created_at
+                                FROM todoitems
+                                WHERE user_id = @UserId;";
+
+            using var command = new MySqlCommand(sqlQuery, connection);
+            command.Parameters.AddWithValue("@UserId", userId);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            var todoItems = new List<TodoItem>();
+
+            while (await reader.ReadAsync())
+            {
+                todoItems.Add(new TodoItem
+                {
+                    Title = reader.GetString(0),
+                    Description = reader.GetString(1),
+                    IsCompleted = reader.GetBoolean(2),
+                    CreatedAt = reader.GetDateTime(3)
+                });
+            }
+
+            return todoItems;
+        }
     }
 }

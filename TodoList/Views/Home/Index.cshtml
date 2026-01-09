@@ -1,8 +1,50 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Главная";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row align-items-center justify-content-center" style="min-height: 75vh;">
+    <div class="col-lg-8 text-center">
+        <h1 class="display-3 fw-bold mb-4 text-primary">
+            <i class="bi bi-check2-square"></i> TaskMaster
+        </h1>
+
+        <p class="lead fs-4 text-muted mb-5">
+            Ваш идеальный инструмент для планирования дня. Создавайте списки дел,
+            расставляйте приоритеты и достигайте целей без лишней суеты.
+            Всё самое важное всегда под рукой.
+        </p>
+
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Todo" asp-action="Index" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow">
+                    Перейти к моим задачам
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow">
+                    Присоединиться бесплатно
+                </a>
+            }
+        </div>
+
+        <div class="row mt-5 pt-5 border-top">
+            <div class="col-md-4 mb-3">
+                <i class="bi bi-lightning-charge text-warning fs-1"></i>
+                <h5 class="mt-2">Быстрота</h5>
+                <p class="small text-muted">Добавляйте задачи за секунды прямо на ходу.</p>
+            </div>
+            <div class="col-md-4 mb-3">
+                <i class="bi bi-shield-check text-success fs-1"></i>
+                <h5 class="mt-2">Безопасность</h5>
+                <p class="small text-muted">Ваши данные зашифрованы и доступны только вам.</p>
+            </div>
+            <div class="col-md-4 mb-3">
+                <i class="bi bi-calendar-event text-info fs-1"></i>
+                <h5 class="mt-2">Календарь</h5>
+                <p class="small text-muted">Удобное планирование по датам и времени.</p>
+            </div>
+        </div>
+    </div>
 </div>
