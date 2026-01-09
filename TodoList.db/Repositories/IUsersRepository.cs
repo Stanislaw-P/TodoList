@@ -6,6 +6,6 @@ namespace TodoList.db.Repositories
     {
         Task<int> AddAsync(User user);
         Task<List<User>> GetAllAsync();
-        Task<User> GetByEmailAsync(string email);
+        Task<User?> GetByEmailAsync(string email);
     }
 }

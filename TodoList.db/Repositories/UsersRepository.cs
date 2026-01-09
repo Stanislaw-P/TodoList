@@ -17,30 +17,23 @@ namespace TodoList.db.Repositories
             using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            string sqlQuery = "SELECT * FROM users";
+            string sqlQuery = "SELECT id, name, password_hash, email, created_at FROM users"; 
 
             using var command = new MySqlCommand(sqlQuery, connection);
             using var reader = await command.ExecuteReaderAsync();
 
             var users = new List<User>();
 
-            int idInd = reader.GetOrdinal("id");
-            int nameInd = reader.GetOrdinal("name");
-            int passHashInd = reader.GetOrdinal("password_hash");
-            int emailInd = reader.GetOrdinal("email");
-            int createdAtInd = reader.GetOrdinal("created_at");
-
             while (await reader.ReadAsync())
             {
-                var user = new User
+                users.Add(new User
                 {
-                    Id = reader.GetInt32(idInd),
-                    Name = reader.GetString(nameInd),
-                    PasswordHash = reader.GetString(passHashInd),
-                    Email = reader.GetString(emailInd),
-                    CreatedAt = reader.GetDateTime(createdAtInd)
-                };
-                users.Add(user);
+                    Id = reader.GetInt32(reader.GetOrdinal("id")),
+                    Name = reader.GetString(reader.GetOrdinal("name")),
+                    PasswordHash = reader.GetString(reader.GetOrdinal("password_hash")),
+                    Email = reader.GetString(reader.GetOrdinal("email")),
+                    CreatedAt = reader.GetDateTime(reader.GetOrdinal("created_at"))
+                });
             }
 
             return users;
@@ -68,7 +61,7 @@ namespace TodoList.db.Repositories
             return Convert.ToInt32(result);
         }
 
-        public async Task<User> GetByEmailAsync(string email)
+        public async Task<User?> GetByEmailAsync(string email)
         {
             using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
@@ -79,21 +72,19 @@ namespace TodoList.db.Repositories
 
             var reader = await command.ExecuteReaderAsync();
 
-            int idInd = reader.GetOrdinal("id");
-            int nameInd = reader.GetOrdinal("name");
-            int passHashInd = reader.GetOrdinal("password_hash");
-            int emailInd = reader.GetOrdinal("email");
-            int createdAtInd = reader.GetOrdinal("created_at");
-
-            await reader.ReadAsync();
-            return new User
+            while (await reader.ReadAsync())
             {
-                Id = reader.GetInt32(idInd),
-                Name = reader.GetString(nameInd),
-                PasswordHash = reader.GetString(passHashInd),
-                Email = reader.GetString(emailInd),
-                CreatedAt = reader.GetDateTime(createdAtInd)
-            };
+                return new User
+                {
+                    Id = reader.GetInt32(reader.GetOrdinal("id")),
+                    Name = reader.GetString(reader.GetOrdinal("name")),
+                    PasswordHash = reader.GetString(reader.GetOrdinal("password_hash")),
+                    Email = reader.GetString(reader.GetOrdinal("email")),
+                    CreatedAt = reader.GetDateTime(reader.GetOrdinal("created_at"))
+                };
+            }
+
+            return null;
         }
     }
 }

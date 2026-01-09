@@ -36,7 +36,7 @@ namespace TodoList.Controllers
             {
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, existingUser.Email),
+                    new Claim(ClaimTypes.Name, existingUser.Name),
                     new Claim(ClaimTypes.NameIdentifier, existingUser.Id.ToString())
                 };
 
@@ -93,7 +93,7 @@ namespace TodoList.Controllers
                 {
                     var claims = new List<Claim>
                     {
-                        new Claim(ClaimTypes.Name, newUser.Email),
+                        new Claim(ClaimTypes.Name, newUser.Name),
                         new Claim(ClaimTypes.NameIdentifier, newUserId.ToString())
                      };
 
@@ -118,6 +118,13 @@ namespace TodoList.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LogoutAsync()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Home");
         }
 
 
