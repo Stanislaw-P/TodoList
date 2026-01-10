@@ -1,0 +1,94 @@
+﻿@{
+    ViewData["Title"] = "О проекте";
+}
+
+<div class="container mt-4" style="max-width: 800px;">
+    <div class="text-center mb-5">
+        <div class="display-4 text-primary mb-2">
+            <i class="bi bi-code-square"></i>
+        </div>
+        <h2 class="fw-bold">Todo List</h2>
+        <p class="text-muted">Пет-проект для изучения архитектуры данных</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">Цель проекта</h5>
+            <p class="text-secondary">
+                Данное приложение создано как площадка для практического освоения
+                низкоуровневой работы с базами данных в .NET.
+            </p>
+            <p class="text-secondary">
+                Вместо использования ORM (вроде Entity Framework), здесь реализовано прямое управление
+                подключениями и транзакциями.
+            </p>
+            <p class="text-secondary">
+                Весь Frontend работает только на библиотеках bootstrap и jQuery.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="h-100 p-4 bg-white border rounded-3 shadow-sm">
+                <h6 class="text-primary fw-bold text-uppercase small mb-3">База данных</h6>
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-database-fill fs-3 me-3 text-dark"></i>
+                    <div>
+                        <span class="fw-bold d-block">MySQL 8.0</span>
+                        <span class="text-muted small">Реляционная СУБД</span>
+                    </div>
+                </div>
+                <hr class="my-3">
+                <p class="small text-muted mb-0">Используются SQL-запросы, индексация и различные выборки данных</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="h-100 p-4 bg-white border rounded-3 shadow-sm">
+                <h6 class="text-primary fw-bold text-uppercase small mb-3">Технология доступа</h6>
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-cpu fs-3 me-3 text-dark"></i>
+                    <div>
+                        <span class="fw-bold d-block">ADO.NET</span>
+                        <span class="text-muted small">System.Data.MySqlClient</span>
+                    </div>
+                </div>
+                <hr class="my-3">
+                <p class="small text-muted mb-0">Ручное управление MySqlConnection, MySqlCommand и DataReader.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-5">
+        <h5 class="fw-bold mb-4">Что было изучено в процессе:</h5>
+        <div class="list-group list-group-flush border rounded-3 shadow-sm">
+            <div class="list-group-item d-flex align-items-start py-3">
+                <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
+                <div>
+                    <div class="fw-bold">Параметризованные запросы</div>
+                    <div class="text-muted small">Защита от SQL-инъекций и правильное приведение типов данных.</div>
+                </div>
+            </div>
+            <div class="list-group-item d-flex align-items-start py-3">
+                <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
+                <div>
+                    <div class="fw-bold">CRUD операции</div>
+                    <div class="text-muted small">Полный цикл: Create, Read, Update, Delete через чистый SQL.</div>
+                </div>
+            </div>
+            <div class="list-group-item d-flex align-items-start py-3">
+                <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
+                <div>
+                    <div class="fw-bold">Паттерн Репозиторий</div>
+                    <div class="text-muted small">Отделение бизнес-логики от логики доступа к данным.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center pb-5">
+        <a href="https://github.com/Stanislaw-P/TodoList.git" class="btn btn-dark shadow-sm">
+            <i class="bi bi-github me-2"></i> Исходный код на GitHub
+        </a>
+    </div>
+</div>

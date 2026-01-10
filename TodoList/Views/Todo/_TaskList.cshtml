@@ -1,0 +1,52 @@
+﻿@model IEnumerable<TodoItem>
+
+@if (!Model.Any())
+{
+    <div class="text-center mt-5 py-5 border rounded-3 bg-light">
+        <i class="bi bi-emoji-smile fs-1 text-muted"></i>
+        <h4 class="mt-3 text-muted">Список пуст. Время создать первую задачу!</h4>
+    </div>
+}
+else
+{
+    @* --- 1. НЕВЫПОЛНЕННЫЕ ЗАДАЧИ --- *@
+    <div class="mb-5">
+        <h6 class="text-primary text-uppercase fw-bold mb-3 small">В процессе</h6>
+        <div class="list-group shadow-sm">
+            @foreach (var task in Model.Where(t => !t.IsCompleted))
+            {
+                <div class="list-group-item d-flex align-items-center justify-content-between py-3">
+                    <div class="d-flex align-items-center">
+                        <form asp-action="ToggleStatus" asp-route-id="@task.Id" method="post">
+                            <input type="checkbox" class="form-check-input me-3" onchange="this.form.submit()" />
+                        </form>
+                        <span class="fw-bold">@task.Title</span>
+                    </div>
+                    <div class="btn-group">
+                        <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-link btn-sm text-secondary p-0 me-2"><i class="bi bi-pencil"></i></a>
+                        <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-link btn-sm text-danger p-0"><i class="bi bi-trash"></i></a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* --- 2. ВЫПОЛНЕННЫЕ ЗАДАЧИ --- *@
+    <div>
+        <h6 class="text-muted text-uppercase fw-bold mb-3 small">Завершено</h6>
+        <div class="list-group">
+            @foreach (var task in Model.Where(t => t.IsCompleted))
+            {
+                <div class="list-group-item d-flex align-items-center justify-content-between py-2 bg-light">
+                    <div class="d-flex align-items-center">
+                        <form asp-action="ToggleStatus" asp-route-id="@task.Id" method="post">
+                            <input type="checkbox" class="form-check-input me-3" onchange="this.form.submit()" checked />
+                        </form>
+                        <span class="text-decoration-line-through text-muted">@task.Title</span>
+                    </div>
+                    <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-link btn-sm text-danger p-0"><i class="bi bi-trash"></i></a>
+                </div>
+            }
+        </div>
+    </div>
+}

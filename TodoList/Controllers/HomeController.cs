@@ -16,12 +16,12 @@ namespace TodoList.Controllers
             _usersRepository = usersRepository;
         }
 
-        public async Task<IActionResult> IndexAsync()
+        public IActionResult Index()
         {
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult About()
         {
             return View();
         }
