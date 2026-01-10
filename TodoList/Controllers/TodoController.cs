@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TodoList.db.Models;
 using TodoList.db.Repositories;
+using TodoList.Models;
 
 namespace TodoList.Controllers
 {
+    [Authorize]
     public class TodoController : Controller
     {
         private readonly ITodoitemsRepository _todoitemsRepository;
@@ -67,5 +70,36 @@ namespace TodoList.Controllers
             return PartialView("_TaskList", todoItems);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateAsync(CreateTodoItemViewModel model)
+        {
+            var userIdString = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString)) return Unauthorized();
+
+            var userId = Convert.ToInt32(userIdString);
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var newTask = new TodoItem
+                    {
+                        Title = model.Title,
+                        Description = model.Description,
+                        UserId = userId,
+                        CreatedAt = DateTime.Now
+                    };
+                    await _todoitemsRepository.AddAsync(newTask);
+                    var todoItems = await _todoitemsRepository.GetAllAsync(userId);
+                    return PartialView("_TaskList", todoItems);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest("Ошибка БД: " + ex.Message);
+                }
+            }
+
+            return BadRequest("Некорректные данные. Название обязательно.");
+        }
     }
 }

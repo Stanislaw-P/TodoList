@@ -66,13 +66,29 @@ namespace TodoList.db.Repositories
                 todoItems.Add(new TodoItem
                 {
                     Title = reader.GetString(0),
-                    Description = reader.GetString(1),
+                    Description = await reader.IsDBNullAsync(1) ? null : reader.GetString(1),
                     IsCompleted = reader.GetBoolean(2),
                     CreatedAt = reader.GetDateTime(3)
                 });
             }
 
             return todoItems;
+        }
+
+        public async Task AddAsync(TodoItem newTodoItem)
+        {
+            using MySqlConnection connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            string sqlQuery = @"INSERT INTO todoitems (title, description, user_id, created_at)
+                                VALUES (@Title, @Description, @UserId, @CreatedAt);";
+            using var command = new MySqlCommand(sqlQuery, connection);
+            command.Parameters.AddWithValue("@Title", newTodoItem.Title);
+            command.Parameters.AddWithValue("@Description", newTodoItem.Description);
+            command.Parameters.AddWithValue("@UserId", newTodoItem.UserId);
+            command.Parameters.AddWithValue("@CreatedAt", newTodoItem.CreatedAt);
+
+            await command.ExecuteNonQueryAsync();
         }
     }
 }

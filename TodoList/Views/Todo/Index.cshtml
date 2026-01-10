@@ -7,9 +7,9 @@
 <div class="container mt-4" style="max-width: 800px;">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold m-0">Мои задачи</h2>
-        <a asp-action="Create" class="btn btn-primary btn-sm">
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createTaskModal">
             <i class="bi bi-plus-lg"></i> Новая задача
-        </a>
+        </button>
     </div>
 
     <div class="mb-4">
@@ -23,12 +23,71 @@
     </div>
 </div>
 
+<div class="modal fade" id="createTaskModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="createTaskModalLabel">
+                    <i class="bi bi-pencil-square me-2 text-primary"></i>Новая задача
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createTaskForm">
+                <div class="modal-body py-4">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Название задачи</label>
+                        <input type="text" name="Title" class="form-control form-control-lg border-2" id="taskTitle" placeholder="Что нужно сделать?" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Описание</label>
+                        <textarea name="Description" class="form-control border-2" id="taskDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary px-4" id="btnSaveTask">Создать задачу</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        function loadTasks(sortOrder) {
-            // Анимация затухания перед загрузкой
-            $('#taskListContainer').css('opacity', '0.5');
+        // Используем (e), чтобы передать событие
+        $('#createTaskForm').on('submit', function (e) {
+            e.preventDefault(); // ОБЯЗАТЕЛЬНО: отменяем перезагрузку страницы
 
+            var formData = {
+                Title: $('#taskTitle').val(),
+                Description: $('#taskDescription').val()
+            };
+
+            $.ajax({
+                // Убедитесь, что имя метода совпадает (CreateAsync или Create)
+                url: '@Url.Action("Create", "Todo")',
+                type: 'POST',
+                data: formData,
+                success: function (data) { // Добавили аргумент data
+                    $('#taskListContainer').html(data);
+
+                    // Закрытие модалки
+                    var modalEl = document.getElementById('createTaskModal');
+                    var modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) {
+                        modal.hide();
+                    }
+
+                    $('#createTaskForm')[0].reset();
+                },
+                error: function (xhr) {
+                    alert("Ошибка: " + xhr.responseText);
+                }
+            });
+        });
+
+        function loadTasks(sortOrder) {
+            $('#taskListContainer').css('opacity', '0.5');
             $.ajax({
                 url: '@Url.Action("GetTasksPartial", "Todo")',
                 data: { sortOrder: sortOrder },
