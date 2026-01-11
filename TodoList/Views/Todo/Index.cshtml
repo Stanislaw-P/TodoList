@@ -33,6 +33,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="createTaskForm">
+                @Html.AntiForgeryToken()
+
                 <div class="modal-body py-4">
                     <div class="mb-3">
                         <label class="form-label small text-muted text-uppercase fw-bold">Название задачи</label>
@@ -54,9 +56,8 @@
 
 @section Scripts {
     <script>
-        // Используем (e), чтобы передать событие
         $('#createTaskForm').on('submit', function (e) {
-            e.preventDefault(); // ОБЯЗАТЕЛЬНО: отменяем перезагрузку страницы
+            e.preventDefault();
 
             var formData = {
                 Title: $('#taskTitle').val(),
@@ -64,11 +65,13 @@
             };
 
             $.ajax({
-                // Убедитесь, что имя метода совпадает (CreateAsync или Create)
                 url: '@Url.Action("Create", "Todo")',
                 type: 'POST',
                 data: formData,
-                success: function (data) { // Добавили аргумент data
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (data) {
                     $('#taskListContainer').html(data);
 
                     // Закрытие модалки
@@ -90,6 +93,7 @@
             $('#taskListContainer').css('opacity', '0.5');
             $.ajax({
                 url: '@Url.Action("GetTasksPartial", "Todo")',
+                type: 'GET',
                 data: { sortOrder: sortOrder },
                 success: function (data) {
                     $('#taskListContainer').html(data);
@@ -97,5 +101,26 @@
                 }
             });
         }
+
+        function toggleTask(taskId) {
+             $('#taskListContainer').css('opacity', '0.5');
+
+             $.ajax({
+                 url: '@Url.Action("ToggleStatus", "Todo")',
+                 type: 'POST', 
+                 data: { id: taskId },
+                 headers: {
+                     "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                 },
+                 success: function (data) {
+                     $('#taskListContainer').html(data);
+                     $('#taskListContainer').css('opacity', '1');
+                 },
+                 error: function (xhr) {
+                     $('#taskListContainer').css('opacity', '1');
+                     alert("Ошибка смены статуса: " + xhr.status);
+                 }
+             });
+         }
     </script>
 }

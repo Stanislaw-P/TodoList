@@ -17,40 +17,12 @@ namespace TodoList.db.Repositories
             _connectionFactory = connectionFactory;
         }
 
-        public async Task<List<TodoItem>> GetAllAsync()
-        {
-            using MySqlConnection connection = _connectionFactory.CreateConnection();
-            await connection.OpenAsync();
-            string sqlQuery = "SELECT * FROM todoitems";
-
-            using MySqlCommand command = new MySqlCommand(sqlQuery, connection);
-            using var reader = await command.ExecuteReaderAsync();
-
-            var todoItems = new List<TodoItem>();
-
-            while (await reader.ReadAsync())
-            {
-                var item = new TodoItem
-                {
-                    Id = reader.GetInt32(0),
-                    UserId = reader.GetInt32(1),
-                    Title = reader.GetString(2),
-                    Description = await reader.IsDBNullAsync(3) ? null : reader.GetString(3),
-                    IsCompleted = reader.GetBoolean(4),
-                    CreatedAt = reader.GetDateTime(5)
-                };
-                todoItems.Add(item);
-            }
-
-            return todoItems;
-        }
-
         public async Task<List<TodoItem>> GetAllAsync(int userId)
         {
             using MySqlConnection connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            string sqlQuery = @"SELECT title, description, is_completed, created_at
+            string sqlQuery = @"SELECT id, user_id, title, description, is_completed, created_at
                                 FROM todoitems
                                 WHERE user_id = @UserId;";
 
@@ -65,10 +37,12 @@ namespace TodoList.db.Repositories
             {
                 todoItems.Add(new TodoItem
                 {
-                    Title = reader.GetString(0),
-                    Description = await reader.IsDBNullAsync(1) ? null : reader.GetString(1),
-                    IsCompleted = reader.GetBoolean(2),
-                    CreatedAt = reader.GetDateTime(3)
+                    Id = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    Title = reader.GetString(2),
+                    Description = await reader.IsDBNullAsync(3) ? null : reader.GetString(3),
+                    IsCompleted = reader.GetBoolean(4),
+                    CreatedAt = reader.GetDateTime(5)
                 });
             }
 
@@ -87,6 +61,22 @@ namespace TodoList.db.Repositories
             command.Parameters.AddWithValue("@Description", newTodoItem.Description);
             command.Parameters.AddWithValue("@UserId", newTodoItem.UserId);
             command.Parameters.AddWithValue("@CreatedAt", newTodoItem.CreatedAt);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        public async Task ToggleStatusAsync(int todoItemId)
+        {
+            using MySqlConnection connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            string sqlQuery = @"UPDATE todoitems
+                                SET is_completed = NOT is_completed
+                                WHERE id = @TodoItemId;";
+
+            using var command = new MySqlCommand(sqlQuery, connection);
+
+            command.Parameters.AddWithValue("@TodoItemId", todoItemId);
 
             await command.ExecuteNonQueryAsync();
         }

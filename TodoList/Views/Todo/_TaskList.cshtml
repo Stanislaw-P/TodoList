@@ -17,9 +17,9 @@ else
             {
                 <div class="list-group-item d-flex align-items-center justify-content-between py-3">
                     <div class="d-flex align-items-center">
-                        <form asp-action="ToggleStatus" asp-route-id="@task.Id" method="post">
-                            <input type="checkbox" class="form-check-input me-3" onchange="this.form.submit()" />
-                        </form>
+                        <input type="checkbox"
+                               class="form-check-input me-3"
+                               onchange="toggleTask(@task.Id)" />
                         <span class="fw-bold">@task.Title</span>
                     </div>
                     <div class="btn-group">
@@ -39,9 +39,10 @@ else
             {
                 <div class="list-group-item d-flex align-items-center justify-content-between py-2 bg-light">
                     <div class="d-flex align-items-center">
-                        <form asp-action="ToggleStatus" asp-route-id="@task.Id" method="post">
-                            <input type="checkbox" class="form-check-input me-3" onchange="this.form.submit()" checked />
-                        </form>
+                        <input type="checkbox"
+                               class="form-check-input me-3"
+                               onchange="toggleTask(@task.Id)"
+                               checked />
                         <span class="text-decoration-line-through text-muted">@task.Title</span>
                     </div>
                     <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-link btn-sm text-danger p-0"><i class="bi bi-trash"></i></a>

@@ -36,13 +36,20 @@ namespace TodoList.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ToggleStatus()
+        public async Task<IActionResult> ToggleStatus(int id)
         {
             var userId = Convert.ToInt32(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            var todoItems = await _todoitemsRepository.GetAllAsync(userId);
-
-            return View();
+            try
+            {
+                await _todoitemsRepository.ToggleStatusAsync(id);
+                var todoItems = await _todoitemsRepository.GetAllAsync(userId);
+                return PartialView("_TaskList", todoItems);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Ошибка БД: " + ex.Message);
+            }
         }
 
         public async Task<IActionResult> GetTasksPartial(string sortOrder)
