@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Asn1.X509;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,5 +81,62 @@ namespace TodoList.db.Repositories
 
             await command.ExecuteNonQueryAsync();
         }
+
+        public async Task DeleteAsync(int TodoItemId)
+        {
+            using MySqlConnection connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            string sqlQuery = "DELETE FROM todoitems WHERE id = @TodoItemId;";
+            using var command = new MySqlCommand(sqlQuery, connection);
+            command.Parameters.AddWithValue("@TodoItemId", TodoItemId);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        public async Task UpdateAsync(TodoItem editedTodoItem)
+        {
+            using MySqlConnection connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            string sqlQuery = @"UPDATE todoitems
+                                SET title = @Title, description = @Description
+                                WHERE id = @Id;";
+            using var command = new MySqlCommand(sqlQuery, connection);
+            command.Parameters.AddWithValue(@"Title", editedTodoItem.Title);
+            command.Parameters.AddWithValue(@"Description", editedTodoItem.Description);
+            command.Parameters.AddWithValue(@"Id", editedTodoItem.Id);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        public async Task<TodoItem?> TryGetByIdAsync(int id)
+        {
+            using MySqlConnection connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            string sqlQuery = @"SELECT id, user_id, title, description, is_completed, created_at
+                                FROM todoitems
+                                WHERE id = @Id";
+            using var command = new MySqlCommand(sqlQuery, connection);
+            command.Parameters.AddWithValue(@"Id", id);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                return new TodoItem
+                {
+                    Id = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    Title = reader.GetString(2),
+                    Description = await reader.IsDBNullAsync(3) ? null : reader.GetString(3),
+                    IsCompleted = reader.GetBoolean(4),
+                    CreatedAt = reader.GetDateTime(5)
+                };
+            }
+
+            return null;
+        }
+
     }
 }

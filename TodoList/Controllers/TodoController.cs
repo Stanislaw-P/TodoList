@@ -23,15 +23,6 @@ namespace TodoList.Controllers
             var userId = Convert.ToInt32(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
             var todoItems = await _todoitemsRepository.GetAllAsync(userId);
 
-
-            //var todoItems = new List<TodoItem>()
-            //{
-            //    new TodoItem { Title = "BTest1", Description = "Desc1", CreatedAt = DateTime.Now, Id =1} ,
-            //    new TodoItem { Title = "ETest2", Description = "Desc2", CreatedAt = DateTime.Now, IsCompleted=true, Id =2} ,
-            //    new TodoItem { Title = "ATest3", Description = "Desc3", CreatedAt = DateTime.Now, Id =3},
-            //    new TodoItem { Title = "DTest3", Description = "Desc4", CreatedAt = DateTime.Now, Id =4, IsCompleted=true}
-            //};
-
             return View(todoItems);
         }
 
@@ -59,14 +50,6 @@ namespace TodoList.Controllers
             var todoItems = await _todoitemsRepository.GetAllAsync(userId);
 
 
-            //var todoItems = new List<TodoItem>()
-            //{
-            //    new TodoItem { Title = "BTest1", Description = "Desc1", CreatedAt = DateTime.Now, Id =1} ,
-            //    new TodoItem { Title = "ETest2", Description = "Desc2", CreatedAt = DateTime.Now, IsCompleted=true, Id =2} ,
-            //    new TodoItem { Title = "ATest3", Description = "Desc3", CreatedAt = DateTime.Now, Id =3},
-            //    new TodoItem { Title = "DTest3", Description = "Desc4", CreatedAt = DateTime.Now, Id =4, IsCompleted = true}
-            //};
-
             todoItems = sortOrder switch
             {
                 "title" => todoItems.OrderBy(t => t.Title).ToList(),
@@ -91,8 +74,8 @@ namespace TodoList.Controllers
                 {
                     var newTask = new TodoItem
                     {
-                        Title = model.Title,
-                        Description = model.Description,
+                        Title = model.Title.Trim(),
+                        Description = model?.Description?.Trim(),
                         UserId = userId,
                         CreatedAt = DateTime.Now
                     };
@@ -104,6 +87,50 @@ namespace TodoList.Controllers
                 {
                     return BadRequest("Ошибка БД: " + ex.Message);
                 }
+            }
+
+            return BadRequest("Некорректные данные. Название обязательно.");
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAsync(int todoItemId)
+        {
+            int userId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            try
+            {
+                await _todoitemsRepository.DeleteAsync(todoItemId);
+                var todoItems = await _todoitemsRepository.GetAllAsync(userId);
+                return PartialView("_TaskList", todoItems);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Ошибка БД: " + ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditAsync(EditTodoItemViewModel model)
+        {
+            int userId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (ModelState.IsValid)
+            {
+                var existingTodoItem = await _todoitemsRepository.TryGetByIdAsync(model.Id);
+                
+                if (existingTodoItem == null)
+                    return BadRequest($"Записи с id: {model.Id} - не существует.");
+
+                var todoItem = new TodoItem
+                {
+                    Id = model.Id,
+                    Title = model.Title.Trim(),
+                    Description = model?.Description?.Trim()
+                };
+
+                await _todoitemsRepository.UpdateAsync(todoItem);
+                var todoItems = await _todoitemsRepository.GetAllAsync(userId);
+                return PartialView("_TaskList", todoItems);
             }
 
             return BadRequest("Некорректные данные. Название обязательно.");

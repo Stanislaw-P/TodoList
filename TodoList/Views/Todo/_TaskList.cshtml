@@ -23,8 +23,14 @@ else
                         <span class="fw-bold">@task.Title</span>
                     </div>
                     <div class="btn-group">
-                        <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-link btn-sm text-secondary p-0 me-2"><i class="bi bi-pencil"></i></a>
-                        <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-link btn-sm text-danger p-0"><i class="bi bi-trash"></i></a>
+                        <button type="button"
+                                class="btn btn-link btn-sm text-secondary p-0 me-2 edit-task-btn"
+                                data-id="@task.Id"
+                                data-title="@task.Title"
+                                data-description="@task.Description">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button onclick="deleteTask(@task.Id)" class="btn btn-link btn-sm text-danger p-0"><i class="bi bi-trash"></i></button>
                     </div>
                 </div>
             }
@@ -45,7 +51,7 @@ else
                                checked />
                         <span class="text-decoration-line-through text-muted">@task.Title</span>
                     </div>
-                    <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-link btn-sm text-danger p-0"><i class="bi bi-trash"></i></a>
+                    <button onclick="deleteTask(@task.Id)" class="btn btn-link btn-sm text-danger p-0"><i class="bi bi-trash"></i></button>
                 </div>
             }
         </div>

@@ -13,7 +13,6 @@
     </div>
 
     <div class="mb-4">
-        @* Заменяем ссылки на кнопки с data-атрибутами *@
         <button onclick="loadTasks('date')" class="btn btn-light btn-sm border text-muted">По дате</button>
         <button onclick="loadTasks('title')" class="btn btn-light btn-sm border text-muted">По названию</button>
     </div>
@@ -22,6 +21,8 @@
         @await Html.PartialAsync("_TaskList", Model)
     </div>
 </div>
+
+
 
 <div class="modal fade" id="createTaskModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -54,6 +55,36 @@
     </div>
 </div>
 
+<div class="modal fade" id="editTaskModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="editTaskModalLabel">
+                    <i class="bi bi-pencil me-2 text-primary"></i>Редактировать задачу
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editTaskForm">
+                <input type="hidden" id="editTaskId" name="Id" />
+
+                <div class="modal-body py-4">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Название задачи</label>
+                        <input type="text" name="Title" class="form-control form-control-lg border-2" id="editTaskTitle" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Описание</label>
+                        <textarea name="Description" class="form-control border-2" id="editTaskDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary px-4">Сохранить изменения</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @section Scripts {
     <script>
         $('#createTaskForm').on('submit', function (e) {
@@ -89,6 +120,48 @@
             });
         });
 
+        $(document).on('click', '.edit-task-btn', function() {
+            var id = $(this).data('id');
+            var title = $(this).data('title');
+            var description = $(this).data('description');
+
+            $('#editTaskId').val(id);
+            $('#editTaskTitle').val(title);
+            $('#editTaskDescription').val(description);
+
+            var modalEl = document.getElementById('editTaskModal');
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        });
+
+        $('#editTaskForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var formData = {
+                Id: $('#editTaskId').val(),
+                Title: $('#editTaskTitle').val(),
+                Description: $('#editTaskDescription').val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("Edit", "Todo")',
+                type: 'POST',
+                data: formData,
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (data) {
+                    $('#taskListContainer').html(data);
+                    var modalEl = document.getElementById('editTaskModal');
+                    var modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                },
+                error: function (xhr) {
+                    alert("Ошибка при сохранении изменений");
+                }
+            });
+        });
+
         function loadTasks(sortOrder) {
             $('#taskListContainer').css('opacity', '0.5');
             $.ajax({
@@ -107,7 +180,7 @@
 
              $.ajax({
                  url: '@Url.Action("ToggleStatus", "Todo")',
-                 type: 'POST', 
+                 type: 'POST',
                  data: { id: taskId },
                  headers: {
                      "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
@@ -117,6 +190,27 @@
                      $('#taskListContainer').css('opacity', '1');
                  },
                  error: function (xhr) {
+                     $('#taskListContainer').css('opacity', '1');
+                     alert("Ошибка смены статуса: " + xhr.status);
+                 }
+             });
+         }
+
+         function deleteTask(taskId) {
+             $('#taskListContainer').css('opacity', '0.5');
+
+             $.ajax({
+                 url: '@Url.Action("Delete", "Todo")',
+                 type: 'DELETE',
+                 data: {todoItemId: taskId },
+                 headers: {
+                     "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                 },
+                 success: function (data) {
+                     $('#taskListContainer').html(data);
+                     $('#taskListContainer').css('opacity', '1');
+                 },
+                 error: function(xhr) {
                      $('#taskListContainer').css('opacity', '1');
                      alert("Ошибка смены статуса: " + xhr.status);
                  }
