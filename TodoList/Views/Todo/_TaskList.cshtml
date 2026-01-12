@@ -24,6 +24,13 @@ else
                     </div>
                     <div class="btn-group">
                         <button type="button"
+                                class="btn btn-link btn-sm text-info p-0 me-2 details-task-btn"
+                                data-title="@task.Title"
+                                data-description="@task.Description"
+                                data-is_completed="@(task.IsCompleted ? "true" : "false")">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button type="button"
                                 class="btn btn-link btn-sm text-secondary p-0 me-2 edit-task-btn"
                                 data-id="@task.Id"
                                 data-title="@task.Title"
@@ -51,7 +58,16 @@ else
                                checked />
                         <span class="text-decoration-line-through text-muted">@task.Title</span>
                     </div>
-                    <button onclick="deleteTask(@task.Id)" class="btn btn-link btn-sm text-danger p-0"><i class="bi bi-trash"></i></button>
+                    <div class="btn-group">
+                        <button type="button"
+                                class="btn btn-link btn-sm text-info p-0 me-2 details-task-btn"
+                                data-title="@task.Title"
+                                data-description="@task.Description"
+                                data-is_completed="@(task.IsCompleted ? "true" : "false")">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button onclick="deleteTask(@task.Id)" class="btn btn-link btn-sm text-danger p-0"><i class="bi bi-trash"></i></button>
+                    </div>
                 </div>
             }
         </div>

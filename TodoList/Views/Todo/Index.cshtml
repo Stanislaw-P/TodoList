@@ -85,6 +85,39 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="detailsTaskModal" tabindex="-1" aria-labelledby="detailsTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="detailsTaskModalLabel">
+                    <i class="bi bi-info-circle me-2"></i>Детали задачи
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="mb-3">
+                    <label class="form-label small text-muted text-uppercase fw-bold">Название</label>
+                    <div id="detailsTaskTitle" class="p-2 border rounded bg-light fw-bold"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-muted text-uppercase fw-bold">Описание</label>
+                    <div id="detailsTaskDescription" class="p-2 border rounded bg-light" style="min-height: 100px; white-space: pre-wrap;"></div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Статус</label>
+                        <div id="detailsTaskStatus" class="small"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         $('#createTaskForm').on('submit', function (e) {
@@ -118,6 +151,26 @@
                     alert("Ошибка: " + xhr.responseText);
                 }
             });
+        });
+
+        $(document).on('click', '.details-task-btn', function() {
+            var title = $(this).data('title');
+            var description = $(this).data('description');
+            var is_completed = $(this).data('is_completed');
+
+            $('#detailsTaskTitle').text(title);
+            $('#detailsTaskDescription').text(description || "Описание отсутствует");
+
+            const statusEl = $('#detailsTaskStatus');
+            if (is_completed) {
+                statusEl.html('<span class="badge bg-success">Выполнено</span>');
+            } else {
+                statusEl.html('<span class="badge bg-warning text-dark">В процессе</span>');
+            }
+
+            var modalEl = document.getElementById('detailsTaskModal');
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
         });
 
         $(document).on('click', '.edit-task-btn', function() {
