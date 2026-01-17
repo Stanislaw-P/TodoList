@@ -1,0 +1,164 @@
+﻿@{
+    var today = DateTime.Today;
+    var currentMonth = ViewBag.SelectedDate as DateTime? ?? today;
+    var firstDay = new DateTime(currentMonth.Year, currentMonth.Month, 1);
+
+    // Сдвигаем так, чтобы понедельник был первым
+    // В .NET: 0 = воскресенье, 1 = понедельник, ..., 6 = суббота
+    // Нам нужно: Пн=0, Вт=1, ..., Вс=6 → поэтому:
+    int startOffset = (int)firstDay.DayOfWeek;
+    if (startOffset == 0) startOffset = 7; // воскресенье → 7
+    startOffset -= 1; // теперь Пн=0, Вс=6
+
+    var daysInMonth = DateTime.DaysInMonth(currentMonth.Year, currentMonth.Month);
+    var pendingDates = ViewBag.PendingTodoDates as HashSet<DateTime> ?? new HashSet<DateTime>();
+}
+
+<style>
+    .mini-calendar {
+        width: 320px;
+        font-size: 0.85rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .mini-calendar-header {
+        background-color: #f8f9fa;
+        padding: 10px;
+        text-align: center;
+        font-weight: 600;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .mini-calendar-header span {
+            flex: 1;
+            text-align: center;
+        }
+
+    .mini-calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-weight: bold;
+        background: #f9f9f9;
+        padding: 6px 0;
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .mini-calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1px;
+        background-color: #eee;
+    }
+
+    .mini-calendar-cell {
+        background: white;
+        padding: 6px 0;
+        text-align: center;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+        .mini-calendar-cell:hover {
+            background-color: #f1f8ff;
+        }
+
+        .mini-calendar-cell.today {
+            background-color: #e3f2fd !important;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+
+        .mini-calendar-cell.has-pending::after {
+            content: "•";
+            bottom: 3px;
+            color: #e53935;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+    .mini-calendar-nav a {
+        text-decoration: none;
+        color: #495057;
+        font-size: 1.1rem;
+        padding: 0 8px;
+    }
+
+        .mini-calendar-nav a:hover {
+            color: #0d6efd;
+        }
+
+    .no-deadline-link {
+        display: block;
+        text-align: center;
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: #6c757d;
+        text-decoration: none;
+    }
+
+        .no-deadline-link:hover {
+            color: #0d6efd;
+        }
+</style>
+
+<div class="mini-calendar">
+    <div class="mini-calendar-header">
+        <a href="@Url.Action("Calendar", "Todo", new { selectedDate = currentMonth.AddMonths(-1) })" class="nav-link">&lt;</a>
+        <span>@currentMonth.ToString("Y")</span>
+        <a href="@Url.Action("Calendar", "Todo", new { selectedDate = currentMonth.AddMonths(1) })" class="nav-link">&gt;</a>
+    </div>
+
+    <div class="mini-calendar-days">
+        <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div>
+        <div>Пт</div><div>Сб</div><div>Вс</div>
+    </div>
+
+    <div class="mini-calendar-grid">
+        <!-- Пустые ячейки до понедельника первой недели -->
+        @for (int i = 0; i < startOffset; i++)
+        {
+            <div class="mini-calendar-cell"></div>
+        }
+
+        <!-- Дни месяца -->
+        @for (int day = 1; day <= daysInMonth; day++)
+        {
+            var date = new DateTime(currentMonth.Year, currentMonth.Month, day);
+            bool isToday = date.Date == today.Date;
+            bool hasPending = pendingDates.Contains(date.Date);
+
+            <a href="@Url.Action("Calendar", "Todo", new { selectedDate = date })"
+               class="mini-calendar-cell @(isToday ? "today" : "") @(hasPending ? "has-pending" : "")">
+                @day
+            </a>
+        }
+
+        <!-- Заполнение пустыми ячейками до конца сетки (опционально) -->
+        @{
+            int totalCells = startOffset + daysInMonth;
+            int remaining = (7 - (totalCells % 7)) % 7;
+            for (int i = 0; i < remaining; i++)
+            {
+                <div class="mini-calendar-cell"></div>
+            }
+        }
+    </div>
+
+    <a href="@Url.Action("Index", "Todo", new { selectedDate = (DateTime?)null })"
+       class="no-deadline-link">
+        ⏳ Задачи без дедлайна
+    </a>
+</div>

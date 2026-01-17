@@ -2,6 +2,7 @@
 using Org.BouncyCastle.Asn1.X509;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -138,5 +139,79 @@ namespace TodoList.db.Repositories
             return null;
         }
 
+        public async Task<List<TodoItem>?> TryGetForSelectedDateAsync(int userId, DateTime? selectedDate)
+        {
+            using MySqlConnection connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            string sql;
+            if (selectedDate.HasValue)
+            {
+                sql = @"
+            SELECT id, user_id, title, description, is_completed, created_at, due_date
+            FROM todoitems
+            WHERE user_id = @UserId 
+              AND DATE(due_date) = DATE(@SelectedDate)
+              AND is_completed = FALSE";
+            }
+            else
+            {
+                sql = @"
+            SELECT id, user_id, title, description, is_completed, created_at, due_date
+            FROM todoitems
+            WHERE user_id = @UserId 
+              AND due_date IS NULL
+              AND is_completed = FALSE";
+            }
+
+            using var command = new MySqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@UserId", userId);
+            if (selectedDate.HasValue)
+            {
+                command.Parameters.AddWithValue("@SelectedDate", selectedDate.Value);
+            }
+
+            var items = new List<TodoItem>();
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                items.Add(new TodoItem
+                {
+                    Id = reader.GetInt32("id"),
+                    UserId = reader.GetInt32("user_id"),
+                    Title = reader.GetString("title"),
+                    Description = await reader.IsDBNullAsync("description") ? null : reader.GetString("description"),
+                    IsCompleted = reader.GetBoolean("is_completed"),
+                    CreatedAt = reader.GetDateTime("created_at"),
+                    DueDate = await reader.IsDBNullAsync("due_date") ? null : reader.GetDateTime("due_date")
+                });
+            }
+            return items;
+        }
+
+        // В репозитории
+        public async Task<List<DateTime>> GetDueDatesWithPendingTasksAsync(int userId)
+        {
+            using MySqlConnection connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            var sql = @"
+        SELECT DISTINCT DATE(due_date) 
+        FROM todoitems 
+        WHERE user_id = @UserId 
+          AND due_date IS NOT NULL 
+          AND is_completed = FALSE";
+
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@UserId", userId);
+
+            var dates = new List<DateTime>();
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                dates.Add(reader.GetDateTime(0));
+            }
+            return dates;
+        }
     }
 }

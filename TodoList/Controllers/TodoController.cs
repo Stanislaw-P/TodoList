@@ -117,7 +117,7 @@ namespace TodoList.Controllers
             if (ModelState.IsValid)
             {
                 var existingTodoItem = await _todoitemsRepository.TryGetByIdAsync(model.Id);
-                
+
                 if (existingTodoItem == null)
                     return BadRequest($"Записи с id: {model.Id} - не существует.");
 
@@ -134,6 +134,18 @@ namespace TodoList.Controllers
             }
 
             return BadRequest("Некорректные данные. Название обязательно.");
+        }
+
+        public async Task<IActionResult> CalendarAsync(DateTime? selectedDate = null)
+        {
+            int userId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var todoItems = await _todoitemsRepository.TryGetForSelectedDateAsync(userId, selectedDate);
+            var pendingDates = await _todoitemsRepository.GetDueDatesWithPendingTasksAsync(userId);
+
+            ViewBag.SelectedDate = selectedDate;
+            ViewBag.PendingTodoDates = new HashSet<DateTime>(pendingDates); // для быстрой проверки
+            return View(todoItems);
         }
     }
 }
