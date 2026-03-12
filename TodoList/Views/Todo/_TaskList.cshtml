@@ -16,12 +16,24 @@ else
             @foreach (var task in Model.Where(t => !t.IsCompleted))
             {
                 <div class="list-group-item d-flex align-items-center justify-content-between py-3">
-                    <div class="d-flex align-items-center">
-                        <input type="checkbox"
-                               class="form-check-input me-3"
-                               onchange="toggleTask(@task.Id)" />
-                        <span class="fw-bold">@task.Title</span>
-                    </div>
+                    @if (ViewBag.CallerAction == "WithDate")
+                    {
+                        <div class="d-flex align-items-center">
+                            <input type="checkbox"
+                                   class="form-check-input me-3"
+                                   onchange="toggleTaskWithDate(@task.Id, '@(task.DueDate?.ToString("o") ?? "")')" />
+                            <span class="fw-bold">@task.Title</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center">
+                            <input type="checkbox"
+                                   class="form-check-input me-3"
+                                   onchange="toggleTask(@task.Id)" />
+                            <span class="fw-bold">@task.Title</span>
+                        </div>
+                    }
                     <div class="btn-group">
                         <button type="button"
                                 class="btn btn-link btn-sm text-info p-0 me-2 details-task-btn"
@@ -34,7 +46,8 @@ else
                                 class="btn btn-link btn-sm text-secondary p-0 me-2 edit-task-btn"
                                 data-id="@task.Id"
                                 data-title="@task.Title"
-                                data-description="@task.Description">
+                                data-description="@task.Description"
+                                data-dueDate="@task.DueDate">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button onclick="deleteTask(@task.Id)" class="btn btn-link btn-sm text-danger p-0"><i class="bi bi-trash"></i></button>

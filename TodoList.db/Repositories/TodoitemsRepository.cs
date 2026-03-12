@@ -24,7 +24,7 @@ namespace TodoList.db.Repositories
             using MySqlConnection connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            string sqlQuery = @"SELECT id, user_id, title, description, is_completed, created_at
+            string sqlQuery = @"SELECT id, user_id, title, description, is_completed, created_at, due_date
                                 FROM todoitems
                                 WHERE user_id = @UserId;";
 
@@ -44,7 +44,8 @@ namespace TodoList.db.Repositories
                     Title = reader.GetString(2),
                     Description = await reader.IsDBNullAsync(3) ? null : reader.GetString(3),
                     IsCompleted = reader.GetBoolean(4),
-                    CreatedAt = reader.GetDateTime(5)
+                    CreatedAt = reader.GetDateTime(5),
+                    DueDate = await reader.IsDBNullAsync("due_date") ? null : reader.GetDateTime("due_date")
                 });
             }
 
@@ -56,13 +57,14 @@ namespace TodoList.db.Repositories
             using MySqlConnection connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            string sqlQuery = @"INSERT INTO todoitems (title, description, user_id, created_at)
-                                VALUES (@Title, @Description, @UserId, @CreatedAt);";
+            string sqlQuery = @"INSERT INTO todoitems (title, description, user_id, created_at, due_date)
+                                VALUES (@Title, @Description, @UserId, @CreatedAt, @DueDate);";
             using var command = new MySqlCommand(sqlQuery, connection);
             command.Parameters.AddWithValue("@Title", newTodoItem.Title);
             command.Parameters.AddWithValue("@Description", newTodoItem.Description);
             command.Parameters.AddWithValue("@UserId", newTodoItem.UserId);
             command.Parameters.AddWithValue("@CreatedAt", newTodoItem.CreatedAt);
+            command.Parameters.AddWithValue("@DueDate", newTodoItem.DueDate);
 
             await command.ExecuteNonQueryAsync();
         }
@@ -100,12 +102,13 @@ namespace TodoList.db.Repositories
             await connection.OpenAsync();
 
             string sqlQuery = @"UPDATE todoitems
-                                SET title = @Title, description = @Description
+                                SET title = @Title, description = @Description, due_date = @DueDate
                                 WHERE id = @Id;";
             using var command = new MySqlCommand(sqlQuery, connection);
             command.Parameters.AddWithValue(@"Title", editedTodoItem.Title);
             command.Parameters.AddWithValue(@"Description", editedTodoItem.Description);
             command.Parameters.AddWithValue(@"Id", editedTodoItem.Id);
+            command.Parameters.AddWithValue(@"DueDate", editedTodoItem.DueDate);
 
             await command.ExecuteNonQueryAsync();
         }
@@ -148,20 +151,20 @@ namespace TodoList.db.Repositories
             if (selectedDate.HasValue)
             {
                 sql = @"
-            SELECT id, user_id, title, description, is_completed, created_at, due_date
-            FROM todoitems
-            WHERE user_id = @UserId 
-              AND DATE(due_date) = DATE(@SelectedDate)
-              AND is_completed = FALSE";
+                        SELECT id, user_id, title, description, is_completed, created_at, due_date
+                        FROM todoitems
+                        WHERE user_id = @UserId 
+                            AND DATE(due_date) = DATE(@SelectedDate)
+                            AND is_completed = FALSE";
             }
             else
             {
                 sql = @"
-            SELECT id, user_id, title, description, is_completed, created_at, due_date
-            FROM todoitems
-            WHERE user_id = @UserId 
-              AND due_date IS NULL
-              AND is_completed = FALSE";
+                        SELECT id, user_id, title, description, is_completed, created_at, due_date
+                        FROM todoitems
+                        WHERE user_id = @UserId 
+                          AND due_date IS NULL
+                          AND is_completed = FALSE";
             }
 
             using var command = new MySqlCommand(sql, connection);

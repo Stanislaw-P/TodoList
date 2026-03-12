@@ -32,7 +32,7 @@
             {
                 if (pendingTasks.Any())
                 {
-                    <div class="mb-5">
+                    <div class="mb-5" id="taskListContainer">
                         <h6 class="text-primary text-uppercase fw-bold mb-3 small">В процессе</h6>
                         <div class="list-group shadow-sm">
                             @foreach (var task in pendingTasks)
@@ -41,7 +41,7 @@
                                     <div class="d-flex align-items-center">
                                         <input type="checkbox"
                                                class="form-check-input me-3"
-                                               onchange="toggleTask(@task.Id)" />
+                                               onchange="toggleTaskWithDate(@task.Id, '@(task.DueDate?.ToString("o") ?? "")')" />
                                         <span class="fw-bold">@task.Title</span>
                                     </div>
                                     <div class="btn-group">
@@ -89,7 +89,8 @@
                                                 class="btn btn-link btn-sm text-info p-0 me-2 details-task-btn"
                                                 data-title="@task.Title"
                                                 data-description="@task.Description"
-                                                data-is_completed="@(task.IsCompleted ? "true" : "false")">
+                                                data-is_completed="@(task.IsCompleted ? "true" : "false")"
+                                                data-dueDate="@task.DueDate">
                                             <i class="bi bi-eye"></i>
                                         </button>
                                         <button onclick="deleteTask(@task.Id)" class="btn btn-link btn-sm text-danger p-0">
@@ -106,11 +107,96 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // Эти функции должны быть определены где-то в layout или отдельном js-файле
-        function toggleTask(id) { /* ... */ }
-        function deleteTask(id) { /* ... */ }
-        // Обработчики для кнопок "подробнее" и "редактировать" — если они есть
-    </script>
-}
+<div class="modal fade" id="createTaskModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="createTaskModalLabel">
+                    <i class="bi bi-pencil-square me-2 text-primary"></i>Новая задача
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createTaskForm">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body py-4">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Название задачи</label>
+                        <input type="text" name="Title" class="form-control form-control-lg border-2" id="taskTitle" placeholder="Что нужно сделать?" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Описание</label>
+                        <textarea name="Description" class="form-control border-2" id="taskDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary px-4" id="btnSaveTask">Создать задачу</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editTaskModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="editTaskModalLabel">
+                    <i class="bi bi-pencil me-2 text-primary"></i>Редактировать задачу
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editTaskForm">
+                <input type="hidden" id="editTaskId" name="Id" />
+
+                <div class="modal-body py-4">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Название задачи</label>
+                        <input type="text" name="Title" class="form-control form-control-lg border-2" id="editTaskTitle" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Описание</label>
+                        <textarea name="Description" class="form-control border-2" id="editTaskDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary px-4">Сохранить изменения</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="detailsTaskModal" tabindex="-1" aria-labelledby="detailsTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="detailsTaskModalLabel">
+                    <i class="bi bi-info-circle me-2"></i>Детали задачи
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="mb-3">
+                    <label class="form-label small text-muted text-uppercase fw-bold">Название</label>
+                    <div id="detailsTaskTitle" class="p-2 border rounded bg-light fw-bold"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-muted text-uppercase fw-bold">Описание</label>
+                    <div id="detailsTaskDescription" class="p-2 border rounded bg-light" style="min-height: 100px; white-space: pre-wrap;"></div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Статус</label>
+                        <div id="detailsTaskStatus" class="small"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>

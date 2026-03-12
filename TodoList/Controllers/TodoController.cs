@@ -27,7 +27,7 @@ namespace TodoList.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ToggleStatus(int id)
+        public async Task<IActionResult> ToggleStatusAsync(int id)
         {
             var userId = Convert.ToInt32(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
 
@@ -43,7 +43,26 @@ namespace TodoList.Controllers
             }
         }
 
-        public async Task<IActionResult> GetTasksPartial(string sortOrder)
+        [HttpPost]
+        public async Task<IActionResult> ToggleStatusWithDateAsync(int id, DateTime selectedDate)
+        {
+            var userId = Convert.ToInt32(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            try
+            {
+                await _todoitemsRepository.ToggleStatusAsync(id);
+                var todoItems = await _todoitemsRepository.TryGetForSelectedDateAsync(userId, selectedDate);
+
+                ViewBag.CallerAction = "WithDate";
+                return PartialView("_TaskList", todoItems);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Ошибка БД: " + ex.Message);
+            }
+        }
+
+        public async Task<IActionResult> GetTasksPartialAsync(string sortOrder)
         {
 
             var userId = Convert.ToInt32(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -77,7 +96,8 @@ namespace TodoList.Controllers
                         Title = model.Title.Trim(),
                         Description = model?.Description?.Trim(),
                         UserId = userId,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.Now,
+                        DueDate = model?.DueDate
                     };
                     await _todoitemsRepository.AddAsync(newTask);
                     var todoItems = await _todoitemsRepository.GetAllAsync(userId);
@@ -125,7 +145,8 @@ namespace TodoList.Controllers
                 {
                     Id = model.Id,
                     Title = model.Title.Trim(),
-                    Description = model?.Description?.Trim()
+                    Description = model?.Description?.Trim(),
+                    DueDate = model?.DueDate
                 };
 
                 await _todoitemsRepository.UpdateAsync(todoItem);

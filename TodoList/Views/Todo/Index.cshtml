@@ -45,6 +45,17 @@
                         <label class="form-label small text-muted text-uppercase fw-bold">Описание</label>
                         <textarea name="Description" class="form-control border-2" id="taskDescription" rows="3"></textarea>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Дата выполнения</label>
+                        <input type="date"
+                               name="DueDate"
+                               class="form-control border-2"
+                               id="taskDueDate"
+                               value=""
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        <small class="form-text text-muted">Оставьте пустым, если задача без дедлайна</small>
+                    </div>
                 </div>
                 <div class="modal-footer bg-light border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
@@ -77,6 +88,18 @@
                         <textarea name="Description" class="form-control border-2" id="editTaskDescription" rows="3"></textarea>
                     </div>
                 </div>
+
+                <div class="mb-3">
+                    <label class="form-label small text-muted text-uppercase fw-bold">Дата выполнения</label>
+                    <input type="date"
+                           name="DueDate"
+                           class="form-control border-2"
+                           id="editTaskDueDate"
+                           value=""
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <small class="form-text text-muted">Оставьте пустым, если задача без дедлайна</small>
+                </div>
+
                 <div class="modal-footer bg-light border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
                     <button type="submit" class="btn btn-primary px-4">Сохранить изменения</button>
@@ -117,157 +140,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        $('#createTaskForm').on('submit', function (e) {
-            e.preventDefault();
-
-            var formData = {
-                Title: $('#taskTitle').val(),
-                Description: $('#taskDescription').val()
-            };
-
-            $.ajax({
-                url: '@Url.Action("Create", "Todo")',
-                type: 'POST',
-                data: formData,
-                headers: {
-                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-                },
-                success: function (data) {
-                    $('#taskListContainer').html(data);
-
-                    // Закрытие модалки
-                    var modalEl = document.getElementById('createTaskModal');
-                    var modal = bootstrap.Modal.getInstance(modalEl);
-                    if (modal) {
-                        modal.hide();
-                    }
-
-                    $('#createTaskForm')[0].reset();
-                },
-                error: function (xhr) {
-                    alert("Ошибка: " + xhr.responseText);
-                }
-            });
-        });
-
-        $(document).on('click', '.details-task-btn', function() {
-            var title = $(this).data('title');
-            var description = $(this).data('description');
-            var is_completed = $(this).data('is_completed');
-
-            $('#detailsTaskTitle').text(title);
-            $('#detailsTaskDescription').text(description || "Описание отсутствует");
-
-            const statusEl = $('#detailsTaskStatus');
-            if (is_completed) {
-                statusEl.html('<span class="badge bg-success">Выполнено</span>');
-            } else {
-                statusEl.html('<span class="badge bg-warning text-dark">В процессе</span>');
-            }
-
-            var modalEl = document.getElementById('detailsTaskModal');
-            var modal = new bootstrap.Modal(modalEl);
-            modal.show();
-        });
-
-        $(document).on('click', '.edit-task-btn', function() {
-            var id = $(this).data('id');
-            var title = $(this).data('title');
-            var description = $(this).data('description');
-
-            $('#editTaskId').val(id);
-            $('#editTaskTitle').val(title);
-            $('#editTaskDescription').val(description);
-
-            var modalEl = document.getElementById('editTaskModal');
-            var modal = new bootstrap.Modal(modalEl);
-            modal.show();
-        });
-
-        $('#editTaskForm').on('submit', function (e) {
-            e.preventDefault();
-
-            var formData = {
-                Id: $('#editTaskId').val(),
-                Title: $('#editTaskTitle').val(),
-                Description: $('#editTaskDescription').val()
-            };
-
-            $.ajax({
-                url: '@Url.Action("Edit", "Todo")',
-                type: 'POST',
-                data: formData,
-                headers: {
-                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-                },
-                success: function (data) {
-                    $('#taskListContainer').html(data);
-                    var modalEl = document.getElementById('editTaskModal');
-                    var modal = bootstrap.Modal.getInstance(modalEl);
-                    modal.hide();
-                },
-                error: function (xhr) {
-                    alert("Ошибка при сохранении изменений");
-                }
-            });
-        });
-
-        function loadTasks(sortOrder) {
-            $('#taskListContainer').css('opacity', '0.5');
-            $.ajax({
-                url: '@Url.Action("GetTasksPartial", "Todo")',
-                type: 'GET',
-                data: { sortOrder: sortOrder },
-                success: function (data) {
-                    $('#taskListContainer').html(data);
-                    $('#taskListContainer').css('opacity', '1');
-                }
-            });
-        }
-
-        function toggleTask(taskId) {
-             $('#taskListContainer').css('opacity', '0.5');
-
-             $.ajax({
-                 url: '@Url.Action("ToggleStatus", "Todo")',
-                 type: 'POST',
-                 data: { id: taskId },
-                 headers: {
-                     "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-                 },
-                 success: function (data) {
-                     $('#taskListContainer').html(data);
-                     $('#taskListContainer').css('opacity', '1');
-                 },
-                 error: function (xhr) {
-                     $('#taskListContainer').css('opacity', '1');
-                     alert("Ошибка смены статуса: " + xhr.status);
-                 }
-             });
-         }
-
-         function deleteTask(taskId) {
-             $('#taskListContainer').css('opacity', '0.5');
-
-             $.ajax({
-                 url: '@Url.Action("Delete", "Todo")',
-                 type: 'DELETE',
-                 data: {todoItemId: taskId },
-                 headers: {
-                     "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-                 },
-                 success: function (data) {
-                     $('#taskListContainer').html(data);
-                     $('#taskListContainer').css('opacity', '1');
-                 },
-                 error: function(xhr) {
-                     $('#taskListContainer').css('opacity', '1');
-                     alert("Ошибка смены статуса: " + xhr.status);
-                 }
-             });
-         }
-    </script>
-}
